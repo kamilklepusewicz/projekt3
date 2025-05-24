@@ -5,7 +5,8 @@
 #include <chrono>
 #include <random>
 
-using HashFunction = std::function<int(int, int)>;
+using namespace std;
+using HashFunction = function<int(int, int)>;
 
 class HashTable {
 public:
@@ -26,7 +27,7 @@ public:
 private:
     int tableSize;
     HashFunction hashFunc;
-    std::vector<std::list<int>> table;
+    vector<list<int>> table;
 };
 
 int hash1(int key, int size) {
@@ -41,42 +42,42 @@ int hash3(int key, int size) {
     return (key ^ (key >> 4)) % size;
 }
 
-void testHashFunction(HashFunction func, const std::string& name,
-                      const std::vector<int>& dataInsert,
-                      const std::vector<int>& dataRemove,
-                      const std::string& caseType,
+void testHashFunction(HashFunction func, const string& name,
+                      const vector<int>& dataInsert,
+                      const vector<int>& dataRemove,
+                      const string& caseType,
                       int tableSize) {
     HashTable ht(tableSize, func);
 
-    std::cout << "=== " << name << " | " << caseType << " ===\n";
+    cout << "=== " << name << " | " << caseType << " ===\n";
 
-    auto startInsert = std::chrono::high_resolution_clock::now();
+    auto startInsert = chrono::high_resolution_clock::now();
     for (int key : dataInsert) {
         ht.insert(key);
     }
-    auto endInsert = std::chrono::high_resolution_clock::now();
+    auto endInsert = chrono::high_resolution_clock::now();
 
-    auto startRemove = std::chrono::high_resolution_clock::now();
+    auto startRemove = chrono::high_resolution_clock::now();
     for (int key : dataRemove) {
         ht.remove(key);
     }
-    auto endRemove = std::chrono::high_resolution_clock::now();
+    auto endRemove = chrono::high_resolution_clock::now();
 
-    auto insertTime = std::chrono::duration_cast<std::chrono::microseconds>(endInsert - startInsert).count();
-    auto removeTime = std::chrono::duration_cast<std::chrono::microseconds>(endRemove - startRemove).count();
+    auto insertTime = chrono::duration_cast<chrono::microseconds>(endInsert - startInsert).count();
+    auto removeTime = chrono::duration_cast<chrono::microseconds>(endRemove - startRemove).count();
 
-    std::cout << "Czas dodawania: " << insertTime << " mikrosekund\n";
-    std::cout << "Czas usuwania:  " << removeTime << " mikrosekund\n\n";
+    cout << "Czas dodawania: " << insertTime << " mikrosekund\n";
+    cout << "Czas usuwania:  " << removeTime << " mikrosekund\n\n";
 }
 
-std::vector<int> generateData(int n, const std::string& type, int tableSize) {
-    std::vector<int> data;
+vector<int> generateData(int n, const string& type, int tableSize) {
+    vector<int> data;
     if (type == "optymistyczny") {
         for (int i = 0; i < n; ++i)
             data.push_back(i); 
     } else if (type == "sredni") {
-        std::mt19937 gen(42);
-        std::uniform_int_distribution<> dist(1, 1000000);
+        mt19937 gen(42);
+        uniform_int_distribution<> dist(1, 1000000);
         for (int i = 0; i < n; ++i)
             data.push_back(dist(gen));
     } else if (type == "pesymistyczny") {
@@ -87,18 +88,25 @@ std::vector<int> generateData(int n, const std::string& type, int tableSize) {
 }
 
 int main() {
-    const int N = 10000;
     const int TABLE_SIZE = 10007;
+    vector<string> cases = { "optymistyczny", "sredni", "pesymistyczny" };
+    vector<int> testSizes = { 1000, 10000, 100000 };
 
-    std::vector<std::string> cases = { "optymistyczny", "sredni", "pesymistyczny" };
+    for (int N : testSizes) {
+        cout << "==============================\n";
+        cout << "#### TEST DLA N = " << N << " ####\n";
+        cout << "==============================\n";
 
-    for (const auto& caseType : cases) {
-        auto insertData = generateData(N, caseType, TABLE_SIZE);
-        auto removeData = insertData;
+        for (const auto& caseType : cases) {
+            auto insertData = generateData(N, caseType, TABLE_SIZE);
+            auto removeData = insertData;
 
-        testHashFunction(hash1, "Hash 1: x % size", insertData, removeData, caseType, TABLE_SIZE);
-        testHashFunction(hash2, "Hash 2: (x / 10) % size", insertData, removeData, caseType, TABLE_SIZE);
-        testHashFunction(hash3, "Hash 3: (x ^ (x >> 4)) % size", insertData, removeData, caseType, TABLE_SIZE);
+            testHashFunction(hash1, "Hash 1: x % size", insertData, removeData, caseType, TABLE_SIZE);
+            testHashFunction(hash2, "Hash 2: (x / 10) % size", insertData, removeData, caseType, TABLE_SIZE);
+            testHashFunction(hash3, "Hash 3: (x ^ (x >> 4)) % size", insertData, removeData, caseType, TABLE_SIZE);
+        }
+
+        cout << endl;
     }
 
     return 0;
